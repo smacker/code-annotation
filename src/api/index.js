@@ -56,12 +56,18 @@ function apiCall(url, options = {}) {
     },
   })
     .then(checkStatus)
-    .then(resp => resp.json())
-    .then(json => {
-      if (json.errors) {
-        throw json.errors;
+    .then(resp => {
+      // no content
+      if (resp.status === 204) {
+        return {};
       }
-      return json.data;
+
+      return resp.json().then(json => {
+        if (json.errors) {
+          throw json.errors;
+        }
+        return json.data;
+      });
     })
     .catch(err => Promise.reject(normalizeErrors(err)));
 }
@@ -79,23 +85,24 @@ function getAssignments(experimentId) {
 }
 
 function getFilePair(experimentId, pairId) {
-  return apiCall(`/api/experiments/${experimentId}/filePairs/${pairId}`);
+  return apiCall(`/api/experiments/${experimentId}/file-pairs/${pairId}`);
 }
 
-// eslint-disable-next-line
-let exportObject = {
+function putAssigment(id, body) {
+  return apiCall(`/api/experiments/1/assignments/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+}
+
+export default {
   me,
 
   getExperiment,
   getAssignments,
   getFilePair,
+  putAssigment,
 };
-if (process.env.NODE_ENV !== 'test') {
-  exportObject = {
-    ...mocks,
-    me,
-  };
-}
-
-// eslint-disable-next-line
-export default exportObject;

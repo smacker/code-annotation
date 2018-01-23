@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/sirupsen/logrus"
 	"github.com/src-d/code-annotation/server/repository"
 	"github.com/src-d/code-annotation/server/service"
 )
@@ -21,30 +20,33 @@ func Login(oAuth *service.OAuth) http.HandlerFunc {
 func OAuthCallback(oAuth *service.OAuth, jwt *service.JWT, userRepo *repository.Users, uiDomain string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := oAuth.ValidateState(r.FormValue("state")); err != nil {
-			writeResponse(w, respErr(http.StatusBadRequest, err.Error()))
+			writeResponse(w, respErr(http.StatusBadRequest, err))
 			return
 		}
 
 		code := r.FormValue("code")
 		user, err := oAuth.GetUser(r.Context(), code)
 		if err != nil {
-			logrus.Errorf("oauth get user error: %s", err)
 			// FIXME can it be not server error? for wrong code
-			writeResponse(w, respInternalErr())
+			writeResponse(w, resp500f("oauth get user error: %s", err))
 			return
 		}
 
-		// FIXME with real repo we need to check does user exists already or not
-		if err := userRepo.Create(user); err != nil {
-			logrus.Errorf("can't create user: %s", err)
-			writeResponse(w, respInternalErr())
+		_, err = userRepo.Get(user.ID)
+		if err != nil && err != repository.NotFoundErr {
+			writeResponse(w, resp500f("can't get user: %s", err))
 			return
+		}
+		if err == repository.NotFoundErr {
+			if err := userRepo.Create(user); err != nil {
+				writeResponse(w, resp500f("can't create user: %s", err))
+				return
+			}
 		}
 
 		token, err := jwt.MakeToken(user)
 		if err != nil {
-			logrus.Errorf("make jwt token error: %s", err)
-			writeResponse(w, respInternalErr())
+			writeResponse(w, resp500f("make jwt token error: %s", err))
 			return
 		}
 		url := fmt.Sprintf("%s/?token=%s", uiDomain, token)

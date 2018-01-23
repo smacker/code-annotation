@@ -1,30 +1,33 @@
 package repository
 
 import (
-	"fmt"
+	"database/sql"
 
 	"github.com/src-d/code-annotation/server/model"
 )
 
 type Users struct {
-	users []*model.User
+	db *sql.DB
+}
+
+func NewUsers(db *sql.DB) *Users {
+	return &Users{db}
 }
 
 func (r *Users) Create(m *model.User) error {
-	for _, u := range r.users {
-		if u.ID == m.ID {
-			return nil
-		}
-	}
-	r.users = append(r.users, m)
-	return nil
+	_, err := r.db.Exec(
+		"INSERT INTO users (id, login, username, avatar_url) VALUES (?, ?, ?, ?)",
+		m.ID, m.Login, m.Username, m.AvatarURL,
+	)
+	return err
 }
 
 func (r *Users) Get(id int) (*model.User, error) {
-	for _, u := range r.users {
-		if u.ID == id {
-			return u, nil
-		}
+	var m model.User
+	err := r.db.QueryRow("SELECT id, login, username, avatar_url FROM users WHERE id=?", id).
+		Scan(&m.ID, &m.Login, &m.Username, &m.AvatarURL)
+	if err != nil {
+		return nil, sqlE(err)
 	}
-	return nil, fmt.Errorf("user with id %d not found", id)
+	return &m, nil
 }

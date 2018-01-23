@@ -15,23 +15,23 @@ const defaultExperimentID = 1
 
 const (
 	createUsers = `CREATE TABLE IF NOT EXISTS users (
-			id INTEGER, github_username TEXT, auth TEXT, role INTEGER,
+			id INTEGER, login TEXT, username TEXT, avatar_url TEXT, role INTEGER,
 			PRIMARY KEY (id))`
 	createExperiments = `CREATE TABLE IF NOT EXISTS experiments (
 			id INTEGER, name TEXT UNIQUE, description TEXT,
 			PRIMARY KEY (id))`
 	// TODO: consider a unique constrain to avoid importing identical pairs
 	createFilePairs = `CREATE TABLE IF NOT EXISTS file_pairs (
-		id INTEGER,
+		id INTEGER ,
 		blob_id_a TEXT, repository_id_a TEXT, commit_hash_a TEXT, path_a TEXT, content_a TEXT, hash_a TEXT,
 		blob_id_b TEXT, repository_id_b TEXT, commit_hash_b TEXT, path_b TEXT, content_b TEXT, hash_b TEXT,
 		score DOUBLE PRECISION, diff TEXT, experiment_id INTEGER,
 		PRIMARY KEY (id),
 		FOREIGN KEY(experiment_id) REFERENCES experiments(id))`
 	createAssignments = `CREATE TABLE IF NOT EXISTS assignments (
+			id INTEGER PRIMARY KEY,
 			user_id INTEGER, pair_id INTEGER, experiment_id INTEGER,
 			answer INTEGER, duration INTEGER,
-			PRIMARY KEY (user_id, pair_id),
 			FOREIGN KEY (user_id) REFERENCES users(id),
 			FOREIGN KEY (pair_id) REFERENCES file_pairs(id),
 			FOREIGN KEY (experiment_id) REFERENCES experiments(id))`
