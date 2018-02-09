@@ -26,7 +26,7 @@ const tmpl = `
 		<br/>
 		<p>Make sure you are logged in from the main dashboard.</p>
 		<br/>
-		<button onclick="goJWT('/exports/actions/create')">Create JWT</button>
+		<button onclick="goJWT('/exports/actions/create')">Create a new SQLite export</button>
 		<ul>
 			{{range .}}
 			<li><a href="javascript:goJWT('/exports/actions/download/{{.}}')">{{.}}</a></li>
