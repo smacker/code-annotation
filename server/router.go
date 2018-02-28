@@ -22,7 +22,6 @@ func Router(
 	jwt *service.JWT,
 	oauth *service.OAuth,
 	static *handler.Static,
-	uiDomain string,
 	dbWrapper *dbutil.DB,
 	exportsPath string,
 	version string,
