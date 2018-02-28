@@ -65,7 +65,7 @@ export const auth = () => (dispatch, getState) => {
       TokenService.set(data.token);
       return dispatch(logIn());
     })
-    .then(() => dispatch(push('/exp/1')))
+    .then(() => dispatch(push('/dashboard')))
     .catch(e => {
       dispatch(addError(e));
       return dispatch(logOut());
